@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <conio.h>
 #include <time.h>
 #include "dqueue.h"
 
@@ -136,33 +137,47 @@ void verHistorial()
 
 void jugar()
 {
-    node *secuencia = NULL; // Cola de la secuencia generada
-    node *respuesta = NULL; // Cola de la respuesta del jugador
+    node *secuencia = NULL; // Cola de la secuencia
     int nivel = 1;
     int color, correcto = 1;
     int puntaje = 0;
 
-    srand(time(NULL)); // Inicializar aleatorio
+    srand(time(NULL));
+
+    // Obtener mejor puntaje del historial
+    int mejorPuntaje = 0;
+    FILE *archivo = fopen("historial.txt", "r");
+    if (archivo != NULL) {
+        char linea[200];
+        while (fgets(linea, sizeof(linea), archivo)) {
+            int p = 0;
+            if (sscanf(linea, "%*[^|]| Puntaje: %d", &p) == 1) {
+                if (p > mejorPuntaje) mejorPuntaje = p;
+            }
+        }
+        fclose(archivo);
+    }
 
     clearScreen();
-    setColor(10); // verde
+    setColor(10); // Verde
     printf("========== COMIENZA EL JUEGO ==========\n\n");
+    printf("Mejor puntaje registrado: %d\n\n", mejorPuntaje);
 
     create_dqueue(&secuencia);
-    create_dqueue(&respuesta);
 
     while (correcto)
     {
-        // Agregar nuevo color aleatorio a la secuencia
-        color = rand() % 4 + 1; // 1-ROJO, 2-VERDE, 3-AZUL, 4-AMARILLO
+        // Agregar nuevo color
+        color = rand() % 4 + 1;
         enqueue_dqueue(&secuencia, color);
 
         clearScreen();
-        setColor(14); // amarillo
-        printf("Nivel %d\n", nivel);
+        setColor(14); // Amarillo
+        printf("Nivel %d | ", nivel);
+        printf("Mejor puntaje: %d\n\n", mejorPuntaje);
         printf("Memoriza la secuencia:\n");
 
-        // Mostrar cada color uno por uno con su color real
+        // Mostrar cada color uno por uno
         node *aux = NULL;
         create_dqueue(&aux);
 
@@ -172,126 +187,95 @@ void jugar()
 
             clearScreen();
             setColor(15);
-            printf("Nivel %d\n\n", nivel);
+            printf("Nivel %d\n", nivel);
+            printf("Mejor puntaje: %d\n\n", mejorPuntaje);
 
-            // Mostrar el color con su color real
             switch (c)
             {
-                case 1:
-                    setColor(12); // Rojo
-                    printf("  ROJO  \n");
-                    break;
-                case 2:
-                    setColor(10); // Verde
-                    printf("  VERDE  \n");
-                    break;
-                case 3:
-                    setColor(11); // Azul/Cyan
-                    printf("  AZUL  \n");
-                    break;
-                case 4:
-                    setColor(14); // Amarillo
-                    printf("  AMARILLO  \n");
-                    break;
+                case 1: setColor(12); printf("  ROJO  \n"); break;
+                case 2: setColor(10); printf("  VERDE  \n"); break;
+                case 3: setColor(11); printf("  AZUL  \n"); break;
+                case 4: setColor(14); printf("  AMARILLO  \n"); break;
             }
 
-            Sleep(2000); // Mostrar 1 segundo
-            clearScreen(); // Limpiar para mostrar el siguiente
+            Sleep(800);
+            clearScreen();
+            Sleep(200);
 
-            enqueue_dqueue(&aux, c); // Guardar para recuperar
+            enqueue_dqueue(&aux, c);
         }
 
-        // Recuperar la secuencia para el siguiente nivel
-        while (!isEmpty_dqueue(aux))
-        {
+        // Restaurar la secuencia
+        while (!isEmpty_dqueue(aux)) {
             int c = dequeue_dqueue(&aux);
             enqueue_dqueue(&secuencia, c);
         }
 
-        // Leer respuesta del usuario
+        // Pedir respuesta con getch y verificar en tiempo real
         setColor(15);
-        printf("Introduce la secuencia de colores separada por espacios:\n");
-        printf("(1: ");
-        setColor(12); // Rojo
-        printf("ROJO ");
-        setColor(15); // Blanco
-        printf(", 2: ");
-        setColor(10); // Verde
-        printf("VERDE ");
-        setColor(15); // Blanco
-        printf(", 3: ");
-        setColor(11); // Azul
-        printf("AZUL ");
-        setColor(15); // Blanco
-        printf(", 4: ");
-        setColor(14); // Amarillo
-        printf("AMARILLO");
-        setColor(15); // Blanco
-        printf(")\n");
-        
-   
+        printf("Repite la secuencia presionando teclas:\n");
+        printf("1: "); setColor(12); printf("ROJO  "); setColor(15);
+        printf("2: "); setColor(10); printf("VERDE  "); setColor(15);
+        printf("3: "); setColor(11); printf("AZUL  "); setColor(15);
+        printf("4: "); setColor(14); printf("AMARILLO\n\n");
+        setColor(15);
 
-        delete_dqueue(&respuesta); // Limpiar respuesta anterior
-
-        for (int i = 0; i < nivel; i++)
-        {
-            int c;
-            scanf("%d", &c);
-            enqueue_dqueue(&respuesta, c);
-        }
-
-        // Comparar secuencia y respuesta
         node *auxSec = NULL;
-        node *auxResp = NULL;
-
         create_dqueue(&auxSec);
-        create_dqueue(&auxResp);
 
-        while (!isEmpty_dqueue(secuencia) && !isEmpty_dqueue(respuesta))
-        {
-            int s = dequeue_dqueue(&secuencia);
-            int r = dequeue_dqueue(&respuesta);
+        for (int i = 0; i < nivel; i++) {
+            int esperado = dequeue_dqueue(&secuencia);
+            enqueue_dqueue(&auxSec, esperado);
 
-            enqueue_dqueue(&auxSec, s);
-            enqueue_dqueue(&auxResp, r);
+            char tecla = getch();
+            int c = tecla - '0';
 
-            if (s != r)
-            {
+            // Mostrar retroalimentación de la tecla
+            switch (c) {
+                case 1: setColor(12); printf("ROJO "); break;
+                case 2: setColor(10); printf("VERDE "); break;
+                case 3: setColor(11); printf("AZUL "); break;
+                case 4: setColor(14); printf("AMARILLO "); break;
+                default: setColor(12); printf("?? "); break;
+            }
+            setColor(15);
+
+            if (c != esperado) {
                 correcto = 0;
-                break;
+                break; // Termina al primer error
             }
         }
+        printf("\n");
 
-        // Recuperar secuencia para el siguiente nivel
-        while (!isEmpty_dqueue(auxSec))
-        {
+        // Restaurar la secuencia para el siguiente nivel
+        while (!isEmpty_dqueue(auxSec)) {
             int c = dequeue_dqueue(&auxSec);
             enqueue_dqueue(&secuencia, c);
         }
 
-        if (correcto)
-        {
+        if (correcto) {
             puntaje = nivel;
             nivel++;
-            setColor(10); // verde
-            printf("\n¡Correcto! Pasas al siguiente nivel.\n");
+            setColor(10); // Verde
+            printf("\nCorrecto! Pasas al siguiente nivel.\n");
             Sleep(1000);
-        }
-        else
-        {
-            setColor(12); // rojo
-            printf("\n¡Incorrecto! Fin del juego.\n");
+        } else {
+            setColor(12); // Rojo
+            printf("\nIncorrecto! Fin del juego.\n");
             printf("Tu puntaje final es: %d\n", puntaje);
+            if (puntaje > mejorPuntaje) {
+                printf("Nuevo mejor puntaje!\n");
+            }
         }
     }
-    // prueba historial
-    FILE *archivo = fopen("historial.txt", "a");
-    if (archivo != NULL)
-	{
+
+    // Guardar en historial
+    archivo = fopen("historial.txt", "a");
+    if (archivo != NULL) {
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
         fprintf(archivo, "Jugador: %s | Fecha: %02d-%02d-%d | Puntaje: %d\n",
-                jugador, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, puntaje); //cambiar puntaje
+                jugador, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, puntaje);
         fclose(archivo);
     }
 

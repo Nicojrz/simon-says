@@ -1,0 +1,8 @@
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 4
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 0
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 1
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 4
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 2
+Jugador: hola | Fecha: 18-06-2025 | Puntaje: 1
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 1
+Jugador: nico | Fecha: 18-06-2025 | Puntaje: 0

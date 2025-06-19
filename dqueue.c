@@ -1,5 +1,5 @@
 #include "dqueue.h"
-//Funciones de cola con pilas
+
 void create_dstack(node** s)
 {
     *s = NULL;
@@ -73,7 +73,6 @@ void print_dstack(node** s)
     }
     printf("\n");
 }
-
 
 void create_dqueue(node **s)
 {

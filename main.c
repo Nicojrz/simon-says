@@ -41,7 +41,7 @@ int main()
 	
 	//input nombre
     fgets(jugador, MAX_NOMBRE, stdin);
-    jugador[strcspn(jugador, "\n")] = '\0';
+    jugador[strcspn(jugador,"\n")] = '\0';
 
     do
 	{
@@ -79,7 +79,6 @@ int main()
     return 0;
 }
 
-
 void setColor(int color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -114,13 +113,13 @@ void verHistorial()
     char linea[200];
 
     clearScreen();
-    setColor(9);//az claro
-    printf("========== HISTORIAL DE JUGADAS ==========\n\n");
+    setColor(9); // Azul claro
+    printf("========== MEJOR PUNTAJE ==========\n\n");
 
-    archivo = fopen("historial.txt", "r");
+    archivo = fopen("mejor_puntaje.txt", "r");
     if (archivo == NULL)
 	{
-        printf("No hay historial disponible.\n");
+        printf("No hay mejor puntaje registrado.\n");
     }
 	else
 	{
@@ -131,9 +130,25 @@ void verHistorial()
         fclose(archivo);
     }
 
+    printf("\n========== HISTORIAL DE JUGADAS ==========\n\n");
+    archivo = fopen("historial.txt", "r");
+	
+    if (archivo == NULL)
+	{
+        printf("No hay historial disponible.\n");
+    }
+	else
+	{
+        while (fgets(linea, sizeof(linea), archivo)) {
+            printf("%s", linea);
+        }
+        fclose(archivo);
+    }
+
     printf("\n");
     system("pause");
 }
+
 
 void jugar()
 {
@@ -144,15 +159,19 @@ void jugar()
 
     srand(time(NULL));
 
-    // Obtener mejor puntaje del historial
+    // Leer mejor puntaje oficial desde mejor_puntaje.txt
     int mejorPuntaje = 0;
-    FILE *archivo = fopen("historial.txt", "r");
-    if (archivo != NULL) {
+    char mejorJugador[MAX_NOMBRE] = "";
+    FILE *archivo = fopen("mejor_puntaje.txt", "r");
+    if(archivo != NULL)
+	{
         char linea[200];
-        while (fgets(linea, sizeof(linea), archivo)) {
+        while(fgets(linea, sizeof(linea), archivo))
+		{
             int p = 0;
-            if (sscanf(linea, "%*[^|]| Puntaje: %d", &p) == 1) {
-                if (p > mejorPuntaje) mejorPuntaje = p;
+            if(sscanf(linea, "Jugador: %[^ |]| Fecha: %*[^ |]| Puntaje: %d", mejorJugador, &p) == 2)	
+			{
+                mejorPuntaje = p;
             }
         }
         fclose(archivo);
@@ -161,11 +180,11 @@ void jugar()
     clearScreen();
     setColor(10); // Verde
     printf("========== COMIENZA EL JUEGO ==========\n\n");
-    printf("Mejor puntaje registrado: %d\n\n", mejorPuntaje);
+    printf("Mejor puntaje: %d por %s\n\n", mejorPuntaje, mejorJugador[0] ? mejorJugador : "no hay");
 
     create_dqueue(&secuencia);
 
-    while (correcto)
+    while(correcto)
     {
         // Agregar nuevo color
         color = rand() % 4 + 1;
@@ -173,29 +192,40 @@ void jugar()
 
         clearScreen();
         setColor(14); // Amarillo
-        printf("Nivel %d | ", nivel);
-        printf("Mejor puntaje: %d\n\n", mejorPuntaje);
+        printf("Nivel %d | Mejor puntaje: %d (%s)\n\n", nivel, mejorPuntaje, mejorJugador[0] ? mejorJugador : "no hay");
         printf("Memoriza la secuencia:\n");
 
         // Mostrar cada color uno por uno
         node *aux = NULL;
         create_dqueue(&aux);
 
-        while (!isEmpty_dqueue(secuencia))
+        while(!isEmpty_dqueue(secuencia))
         {
             int c = dequeue_dqueue(&secuencia);
 
             clearScreen();
             setColor(15);
             printf("Nivel %d\n", nivel);
-            printf("Mejor puntaje: %d\n\n", mejorPuntaje);
+            printf("Mejor puntaje: %d (%s)\n\n", mejorPuntaje, mejorJugador[0] ? mejorJugador : "no hay");
 
-            switch (c)
+            switch(c)
             {
-                case 1: setColor(12); printf("  ROJO  \n"); break;
-                case 2: setColor(10); printf("  VERDE  \n"); break;
-                case 3: setColor(11); printf("  AZUL  \n"); break;
-                case 4: setColor(14); printf("  AMARILLO  \n"); break;
+                case 1:
+					setColor(12);
+					printf("  ROJO  \n");
+					break;
+                case 2:
+					setColor(10);
+					printf("  VERDE  \n");
+					break;
+                case 3:
+					setColor(11);
+					printf("  AZUL  \n");
+					break;
+                case 4:
+					setColor(14);
+					printf("  AMARILLO  \n");
+					break;
             }
 
             Sleep(800);
@@ -206,12 +236,13 @@ void jugar()
         }
 
         // Restaurar la secuencia
-        while (!isEmpty_dqueue(aux)) {
+        while (!isEmpty_dqueue(aux))
+        {
             int c = dequeue_dqueue(&aux);
             enqueue_dqueue(&secuencia, c);
         }
 
-        // Pedir respuesta con getch y verificar en tiempo real
+        // Pedir respuesta tecla por tecla y verificar en tiempo real
         setColor(15);
         printf("Repite la secuencia presionando teclas:\n");
         printf("1: "); setColor(12); printf("ROJO  "); setColor(15);
@@ -223,55 +254,94 @@ void jugar()
         node *auxSec = NULL;
         create_dqueue(&auxSec);
 
-        for (int i = 0; i < nivel; i++) {
+        for(int i = 0; i < nivel; i++)
+        {
             int esperado = dequeue_dqueue(&secuencia);
             enqueue_dqueue(&auxSec, esperado);
 
             char tecla = getch();
             int c = tecla - '0';
 
-            // Mostrar retroalimentación de la tecla
-            switch (c) {
-                case 1: setColor(12); printf("ROJO "); break;
-                case 2: setColor(10); printf("VERDE "); break;
-                case 3: setColor(11); printf("AZUL "); break;
-                case 4: setColor(14); printf("AMARILLO "); break;
-                default: setColor(12); printf("?? "); break;
+            // Mostrar feedback
+            switch (c)
+			{
+                case 1:
+					setColor(12);
+					printf("ROJO ");
+					break;
+                case 2:
+					setColor(10);
+					printf("VERDE ");
+					break;
+                case 3:
+					setColor(11);
+					printf("AZUL ");
+					break;
+                case 4:
+					setColor(14);
+					printf("AMARILLO ");
+					break;
+                default:
+					setColor(12);
+					printf("?? ");
+					break;
             }
             setColor(15);
 
-            if (c != esperado) {
+            if(c != esperado)
+			{
                 correcto = 0;
-                break; // Termina al primer error
+                break;
             }
         }
         printf("\n");
 
-        // Restaurar la secuencia para el siguiente nivel
-        while (!isEmpty_dqueue(auxSec)) {
+        // Restaurar secuencia
+        while(!isEmpty_dqueue(auxSec))
+		{
             int c = dequeue_dqueue(&auxSec);
             enqueue_dqueue(&secuencia, c);
         }
 
-        if (correcto) {
+        if(correcto)
+		{
             puntaje = nivel;
             nivel++;
             setColor(10); // Verde
-            printf("\nCorrecto! Pasas al siguiente nivel.\n");
+            printf("\nCorrecto Pasas al siguiente nivel.\n");
             Sleep(1000);
-        } else {
+        }
+		else
+		{
             setColor(12); // Rojo
-            printf("\nIncorrecto! Fin del juego.\n");
+            printf("\nIncorrecto Fin del juego.\n");
             printf("Tu puntaje final es: %d\n", puntaje);
-            if (puntaje > mejorPuntaje) {
+			
+            if (puntaje > mejorPuntaje)
+			{
                 printf("Nuevo mejor puntaje!\n");
+				
+                // Actualizar mejor puntaje
+                archivo = fopen("mejor_puntaje.txt", "w");
+				
+                if (archivo != NULL)
+				{
+					//obtener tiempo local
+                    time_t t = time(NULL);
+                    struct tm tm = *localtime(&t);
+					//file printf
+                    fprintf(archivo, "Jugador: %s | Fecha: %02d-%02d-%d | Puntaje: %d\n",
+                            jugador, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, puntaje);
+                    fclose(archivo);
+                }
             }
         }
     }
 
     // Guardar en historial
     archivo = fopen("historial.txt", "a");
-    if (archivo != NULL) {
+    if (archivo != NULL)
+	{
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
         fprintf(archivo, "Jugador: %s | Fecha: %02d-%02d-%d | Puntaje: %d\n",

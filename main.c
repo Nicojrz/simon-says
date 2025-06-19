@@ -99,12 +99,24 @@ void mostrarMenuPrincipal()
     printf("===================================\n\n");
     setColor(14);  //amarillo
     printf("Bienvenido, %s!\n\n", jugador);
-    printf("1. Ver historial de jugadas\n");
+    printf("1. Historial\n");
     printf("2. Jugar\n");
     printf("3. Instrucciones\n");
     printf("4. Salir\n\n");
     setColor(15);  //blanco
     printf("Selecciona una opcion: ");
+}
+
+void instrucciones()
+{
+    clearScreen();
+    setColor(13); //magenta
+    printf("========== INSTRUCCIONES ==========\n\n");
+    printf("El juego de Simon dice consiste en memorizar e indicar\n");
+    printf("la serie de colores mostrados en cada nivel. Cada nivel\n");
+    printf("agrega un nuevo color a la secuencia. El juego termina\n");
+    printf("cuando se comete un error.\n\n");
+    system("pause");
 }
 
 void verHistorial()
@@ -123,7 +135,7 @@ void verHistorial()
     }
 	else
 	{
-        while (fgets(linea, sizeof(linea), archivo))
+        while(fgets(linea, sizeof(linea), archivo))
 		{
             printf("%s", linea);
         }
@@ -139,7 +151,7 @@ void verHistorial()
     }
 	else
 	{
-        while (fgets(linea, sizeof(linea), archivo)) {
+        while(fgets(linea, sizeof(linea), archivo)) {
             printf("%s", linea);
         }
         fclose(archivo);
@@ -186,16 +198,16 @@ void jugar()
 
     while(correcto)
     {
-        // Agregar nuevo color
+        // random color
         color = rand() % 4 + 1;
         enqueue_dqueue(&secuencia, color);
 
         clearScreen();
-        setColor(14); // Amarillo
+        setColor(14); // amarillo
         printf("Nivel %d | Mejor puntaje: %d (%s)\n\n", nivel, mejorPuntaje, mejorJugador[0] ? mejorJugador : "no hay");
         printf("Memoriza la secuencia:\n");
 
-        // Mostrar cada color uno por uno
+        // imprimir secuencia
         node *aux = NULL;
         create_dqueue(&aux);
 
@@ -235,14 +247,14 @@ void jugar()
             enqueue_dqueue(&aux, c);
         }
 
-        // Restaurar la secuencia
+        // restaurar secuencia
         while (!isEmpty_dqueue(aux))
         {
             int c = dequeue_dqueue(&aux);
             enqueue_dqueue(&secuencia, c);
         }
 
-        // Pedir respuesta tecla por tecla y verificar en tiempo real
+        // pedir respuesta
         setColor(15);
         printf("Repite la secuencia presionando teclas:\n");
         printf("1: "); setColor(12); printf("ROJO  "); setColor(15);
@@ -262,7 +274,7 @@ void jugar()
             char tecla = getch();
             int c = tecla - '0';
 
-            // Mostrar feedback
+            // mostrar feedback
             switch (c)
 			{
                 case 1:
@@ -296,7 +308,7 @@ void jugar()
         }
         printf("\n");
 
-        // Restaurar secuencia
+        // restaurar secuencia
         while(!isEmpty_dqueue(auxSec))
 		{
             int c = dequeue_dqueue(&auxSec);
@@ -307,13 +319,13 @@ void jugar()
 		{
             puntaje = nivel;
             nivel++;
-            setColor(10); // Verde
+            setColor(10); // verde
             printf("\nCorrecto Pasas al siguiente nivel.\n");
             Sleep(1000);
         }
 		else
 		{
-            setColor(12); // Rojo
+            setColor(12); // rojo
             printf("\nIncorrecto Fin del juego.\n");
             printf("Tu puntaje final es: %d\n", puntaje);
 			
@@ -321,7 +333,7 @@ void jugar()
 			{
                 printf("Nuevo mejor puntaje!\n");
 				
-                // Actualizar mejor puntaje
+                // cambiar puntaje
                 archivo = fopen("mejor_puntaje.txt", "w");
 				
                 if (archivo != NULL)
@@ -338,7 +350,7 @@ void jugar()
         }
     }
 
-    // Guardar en historial
+    // guardar historial
     archivo = fopen("historial.txt", "a");
     if (archivo != NULL)
 	{
@@ -349,17 +361,5 @@ void jugar()
         fclose(archivo);
     }
 
-    system("pause");
-}
-
-void instrucciones()
-{
-    clearScreen();
-    setColor(13); //magenta
-    printf("========== INSTRUCCIONES ==========\n\n");
-    printf("El juego de Simon dice consiste en memorizar e indicar\n");
-    printf("la serie de colores mostrados en cada nivel. Cada nivel\n");
-    printf("agrega un nuevo color a la secuencia. El juego termina\n");
-    printf("cuando se comete un error.\n\n");
     system("pause");
 }

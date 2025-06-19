@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 typedef int element;
 typedef struct node
 {
@@ -25,7 +24,5 @@ void enqueue_dqueue(node **s, element e);
 element dequeue_dqueue(node **s);
 void delete_dqueue(node **s);
 void print_dqueue(node **s);
-
-#include "dqueue.h"
 
 #endif

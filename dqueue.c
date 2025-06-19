@@ -74,6 +74,8 @@ void print_dstack(node** s)
     printf("\n");
 }
 
+//Funciones de cola dinamica con funciones de pila dinámica
+
 void create_dqueue(node **s)
 {
     create_dstack(s);
@@ -103,7 +105,7 @@ element dequeue_dqueue(node **s)
 
     element result = pop_dstack(&aux);
 
-    while(!isEmpty_dqueue(aux))
+    while(!isEmpty_dstack(aux))
     {
         e = pop_dstack(&aux);
         push_dstack(s,e);

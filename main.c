@@ -181,7 +181,7 @@ void jugar()
         while(fgets(linea, sizeof(linea), archivo))
 		{
             int p = 0;
-            if(sscanf(linea, "Jugador: %[^ |]| Fecha: %*[^ |]| Puntaje: %d", mejorJugador, &p) == 2)	
+            if(sscanf(linea, "Jugador: %[^|]| Fecha: %*[^|]| Puntaje: %d", mejorJugador, &p) == 2)	
 			{
                 mejorPuntaje = p;
             }
@@ -348,6 +348,9 @@ void jugar()
                 }
             }
         }
+
+        delete_dqueue(&aux);
+        delete_dqueue(&auxSec);
     }
 
     // guardar historial
@@ -360,6 +363,8 @@ void jugar()
                 jugador, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, puntaje);
         fclose(archivo);
     }
+
+    delete_dqueue(&secuencia);
 
     system("pause");
 }
